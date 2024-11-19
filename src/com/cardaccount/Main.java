@@ -1,3 +1,5 @@
+package com.cardaccount;
+
 import java.math.BigDecimal;
 
 public class Main {
@@ -9,16 +11,16 @@ public class Main {
 
     public static void main(String[] args) {
         CardAccount currentAccount = new CardAccount(cardOwner, amount);
-        System.out.println(currentAccount.toString());
+        System.out.println(currentAccount);
         System.out.println("--------------------------------------------------------");
         currentAccount = paidAmountByCard(currentAccount, "Wilkinson", new BigDecimal("1200"));
-        System.out.println(currentAccount.toString());
+        System.out.println(currentAccount);
         System.out.println("--------------------------------------------------------");
         currentAccount = paidAmountByCard(currentAccount, "Wilkinson", new BigDecimal("100"));
-        System.out.println(currentAccount.toString());
+        System.out.println(currentAccount);
         System.out.println("--------------------------------------------------------");
         currentAccount = paidAmountByCard(currentAccount, "Peterson", new BigDecimal("40"));
-        System.out.println(currentAccount.toString());
+        System.out.println(currentAccount);
 
 
 
