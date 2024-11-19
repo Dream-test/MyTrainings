@@ -32,9 +32,11 @@ public class Main {
             System.out.println("Payment successful");
             return currentAccount;
         } catch (InsufficientAmountException error) {
-            System.out.println("Sorry, you haven't enough amount on card");
+            System.out.println(error.getMessage());
+            //System.out.println("Sorry, you haven't enough amount on card");
         } catch (AccessDeniedException error) {
-            System.out.println("Access denied, wrong card owner name");
+            System.out.println(error.getMessage());
+            //System.out.println("Access denied, wrong card owner name");
         } return currentAccount;
     }
 }

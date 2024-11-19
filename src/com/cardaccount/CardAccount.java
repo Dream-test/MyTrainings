@@ -9,8 +9,12 @@ public class CardAccount {
 
 
     public CardAccount(String cardOwnerName, BigDecimal cardAmount) {
-        this.cardOwner = cardOwnerName;
-        this.cardAmount = cardAmount;
+        if (cardOwnerName == null || cardAmount == null || cardOwnerName.isEmpty() || cardAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Invalid CardAccount data");
+        } else {
+            this.cardOwner = cardOwnerName;
+            this.cardAmount = cardAmount;
+        }
     }
 
     public BigDecimal paidByCard(String cardOwnerName, BigDecimal paidAmount) throws AccessDeniedException, InsufficientAmountException {
