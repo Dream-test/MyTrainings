@@ -9,7 +9,7 @@ public class Main {
         new StringAnalysis().countLetters(forCount, letter);
         System.out.println("-------------------------------------------------------------------------------------------------------");
 
-        String[] phoneNumbers = {"+1234567890", "0012234567890", "+1 (234) 567-8901", "987654321", "+7(920)325-46-56", "+375 29) 754-28-12", "+375 (29) 754-28-12", "+7abc25489212"};
+        String[] phoneNumbers = {"+12345678901", "00122345678901", "+1 (234) 567-8901", "987654321", "+7(920)325-46-56", "+375 29) 754-28-12", "+375 (29) 754-28-12", "+7abc25489212"};
         for (String phone : phoneNumbers) {
             System.out.println(phone + " is valid: " + new PhoneValidator().isValid(phone));
         }
