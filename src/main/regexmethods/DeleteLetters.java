@@ -1,4 +1,4 @@
-package com.regexmethods;
+package regexmethods;
 
 public class DeleteLetters {
     private final String regex = "[A-Za-z ]";

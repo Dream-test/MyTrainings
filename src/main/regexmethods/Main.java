@@ -1,4 +1,4 @@
-package com.regexmethods;
+package regexmethods;
 
 public class Main {
 

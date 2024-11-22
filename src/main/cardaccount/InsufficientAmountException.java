@@ -1,4 +1,4 @@
-package com.cardaccount;
+package cardaccount;
 
 public class InsufficientAmountException extends Exception {
     public InsufficientAmountException(String message) {

@@ -1,5 +1,5 @@
 
-package com.cardaccount;
+package cardaccount;
 import java.math.BigDecimal;
 
 public class CardAccount {
