@@ -1,11 +1,9 @@
-package com.cardaccount;
+package cardaccount;
 
 import java.math.BigDecimal;
 
 public class Main {
     static BigDecimal amount = new BigDecimal("1250.45");
-
-    //static float amount = 1250.45F;
     static String cardOwner = "Wilkinson";
 
 
@@ -33,10 +31,8 @@ public class Main {
             return currentAccount;
         } catch (InsufficientAmountException error) {
             System.out.println(error.getMessage());
-            //System.out.println("Sorry, you haven't enough amount on card");
         } catch (AccessDeniedException error) {
             System.out.println(error.getMessage());
-            //System.out.println("Access denied, wrong card owner name");
         } return currentAccount;
     }
 }

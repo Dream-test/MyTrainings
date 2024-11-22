@@ -1,22 +1,15 @@
-package com.regexmethods;
+package regexmethods;
 
 public class StringAnalysis {
-    private String forCount;
-    private String newEditString;
+
 
     public void countLetters(String forCount, char letter) {
-        this.forCount = forCount;
+        String[] forCountWords = forCount
+                .replaceAll("[,.']", "")
+                .trim()
+                .split(" ");
         System.out.println(forCount);
-        editForCount();
-        countLettersInWords(splitStringToWords(), letter);
-    }
-
-    private void editForCount() {
-        newEditString = forCount.replaceAll("[,.']", "").trim();
-    }
-
-    private String[] splitStringToWords() {
-        return newEditString.split(" ");
+        countLettersInWords(forCountWords, letter);
     }
 
     private void countLettersInWords(String[] forCountWords, char letter) {
