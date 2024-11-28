@@ -26,4 +26,35 @@ bin/
 .vscode/
 
 ### Mac OS ###
+# OS-specific files
 .DS_Store
+Thumbs.db
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Maven/Gradle build directories
+/target/
+/out/
+/build/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Ignore JAR/WAR files
+*.jar
+*.war
+
+# Ignore sensitive files
+*.key
+*.pem
+*.env

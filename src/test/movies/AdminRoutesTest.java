@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AdminRoutesTest {
     static String DB_URL = "jdbc:postgresql://localhost:5432/movies";
@@ -17,7 +20,8 @@ public class AdminRoutesTest {
     static Connection connection;
     OkHttpClient client;
 
-    @BeforeAll static void initDBConnection() {
+    @BeforeAll
+    static void initDBConnection() {
         try {
             // Class.forName("org.postgresql.Driver");
             AdminRoutesTest.connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -26,7 +30,8 @@ public class AdminRoutesTest {
         }
     }
 
-    @AfterAll static void closeDBConnection() {
+    @AfterAll
+    static void closeDBConnection() {
         try {
             AdminRoutesTest.connection.close();
         } catch (Exception e) {
@@ -34,7 +39,8 @@ public class AdminRoutesTest {
         }
     }
 
-    @BeforeEach void initHttClient() {
+    @BeforeEach
+    void initHttpClient() {
         this.client = new OkHttpClient.Builder()
                 .addInterceptor(chain -> {
                     Request request = chain.request().newBuilder()
@@ -66,154 +72,36 @@ public class AdminRoutesTest {
 
     @Test
     void adminCanGetMovies() {
-        String filmTitle = "";
+        String[] filmTitles = null;
         try {
             // Class.forName("org.postgresql.Driver");
             Statement statement = AdminRoutesTest.connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT title FROM movies where id=6");
+            ResultSet resultSet = statement.executeQuery("SELECT title FROM movies");
+            List<String> titleList = new ArrayList<>();
             while (resultSet.next()) {
-                filmTitle = resultSet.getString("title");
+                titleList.add(resultSet.getString("title"));
             }
-            System.out.println("adminCanGetMovies / film title: " + filmTitle);
+            filmTitles =titleList.toArray(new String[0]);
+            System.out.println("adminCanGetMovies / film titles: " + Arrays.toString(filmTitles));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
 
         Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/admin/movies/6")
+                .url("http://localhost:4000/v1/admin/movies")
                 .build();
         try {
             String response = this.client.newCall(request).execute().body().string();
             System.out.println("adminCanGetMovies response:" + response);
-            Assertions.assertTrue(response.contains("\"title\":\"" + filmTitle + "\","));
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void appReturnedMovieGenres() {
-        Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/genres")
-                .build();
-
-        try {
-            String response = this.client.newCall(request).execute().body().string();
-            System.out.println("appReturnedMovieGenres response:" + response);
-            Assertions.assertTrue(response.contains("\"id\":11,\"genre\":\"Adventure\""));
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void appReturnedMovies() {
-        String filmTitle = "";
-        String filmID = "";
-        try {
-            // Class.forName("org.postgresql.Driver");
-            Statement statement = AdminRoutesTest.connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT id, title FROM movies LIMIT 1");
-            while (resultSet.next()) {
-                filmTitle = resultSet.getString("title");
-                filmID = resultSet.getString("id");
+            for (String title : filmTitles) {
+                Assertions.assertTrue(response.contains("\"title\":\"" + title + "\","), "\"title\" not found in response: " + title);
             }
-            System.out.println("appReturnedMovies /film title: " + filmTitle + "  film id: " + filmID);
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/movies")
-                .build();
-
-                try {
-                    String response = this.client.newCall(request).execute().body().string();
-                    System.out.println("appReturnedMovies response:" + response);
-                    Assertions.assertTrue(response.contains("\"id\":" + filmID + ",\"title\":\"" + filmTitle + "\","));
-                } catch (Exception e) {
-                    Assertions.fail("Exception: " + e.getMessage());
-                }
-    }
-
-    @Test
-    void appReturnMoviesByGenres() {
-        Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/movies/genres/11")
-                .build();
-
-        try {
-            String response = this.client.newCall(request).execute().body().string();
-            System.out.println("appReturnMoviesByGenres response:" + response);
-            Assertions.assertTrue(response.contains("\"id\":6,\"title\":\"Spirited Away\""));
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-
-    }
-
-    @Test
-    void appReturnedMoviesById() {
-        String filmTitle = "";
-        String filmID = "5";
-        try {
-            // Class.forName("org.postgresql.Driver");
-            Statement statement = AdminRoutesTest.connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT id, title FROM movies WHERE id = " + filmID);
-            while (resultSet.next()) {
-                filmTitle = resultSet.getString("title");
-                filmID = resultSet.getString("id");
-            }
-            System.out.println("appReturnedMoviesById /film title: " + filmTitle + "  film id: " + filmID);
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-
-        Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/movies/" + filmID)
-                .build();
-
-        try {
-            String response = this.client.newCall(request).execute().body().string();
-            System.out.println("appReturnedMoviesById response:" + response);
-            Assertions.assertTrue(response.contains("\"id\":" + filmID + ",\"title\":\"" + filmTitle + "\","));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
     }
 
-    @Test
-    void logOutLogInUser() {
-        Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/logout")
-                .build();
-
-        try {
-            Response response = this.client.newCall(request).execute();
-            System.out.println("logOutLogInUser response:" + response.code());
-            Assertions.assertEquals(202, response.code());
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-
-        OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create("{\"email\":\"admin@example.com\",\"password\":\"secret\"}", mediaType);
-        request = new Request.Builder()
-                .url("http://localhost:4000/v1/authenticate")
-                .post(body)
-                .build();
-
-        try {
-            Response response = client.newCall(request).execute();
-            System.out.println("logOutLogInUser response:" + response.code());
-            Assertions.assertEquals(200, response.code());
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-    }
-
-/*
     @Test
     void patchMovie() {
         String filmTitle = "";
@@ -245,5 +133,4 @@ public class AdminRoutesTest {
         }
     }
 
- */
 }

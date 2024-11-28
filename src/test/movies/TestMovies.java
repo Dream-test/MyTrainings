@@ -2,65 +2,158 @@ package movies;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import java.sql.*;
+import org.junit.jupiter.api.*;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class TestMovies {
-    String DB_URL = "jdbc:postgresql://localhost:5432/movies";
-    String DB_USER = "postgres";
-    String DB_PASSWORD = "postgres";
+   // String DB_URL = "jdbc:postgresql://localhost:5432/movies";
+   // String DB_USER = "postgres";
+   // String DB_PASSWORD = "postgres";
+   OkHttpClient client;
+
+    @BeforeAll
+    static void initDBConnection() {
+        AdminRoutesTest.initDBConnection();
+    }
+
+    @AfterAll
+    static void closeDBConnection() {
+            AdminRoutesTest.closeDBConnection();
+    }
+
+    @BeforeEach
+    void initHttpClient() {
+        this.client = new OkHttpClient();
+    }
+
 
 
     @Test
     void appReturnedMovieGenres() {
-        OkHttpClient client = new OkHttpClient();
+        String[] filmGenres = null;
+        try {
+        Statement statement = AdminRoutesTest.connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT genre FROM genres");
+            List<String> genreList = new ArrayList<>();
+            while (resultSet.next()) {
+                genreList.add(resultSet.getString("genre"));
+            }
+            filmGenres =genreList.toArray(new String[0]);
+            System.out.println("film genres: " + Arrays.toString(filmGenres));
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
+
+       // OkHttpClient client = new OkHttpClient();
         Request  request = new Request.Builder()
                 .url("http://localhost:4000/v1/genres")
                 .build();
 
         try {
-            String response = client.newCall(request).execute().body().string();
+            String response = this.client.newCall(request).execute().body().string();
             System.out.println(response);
-            Assertions.assertTrue(response.contains("Adventure"));
+            for (String genre : filmGenres) {
+                Assertions.assertTrue(response.contains(genre), "genre not found in response: " + genre);
+            }
+            Assertions.assertTrue(response.contains(filmGenres[1]));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
     }
 
     @Test
-    void moviesListIsNotEmpty() {
-        String filmTitle = "";
-        String filmId = "";
-
+    void appReturnedMovies() {
+        String[] filmTitles = null;
         try {
-           // Class.forName("org.postgresql.Driver");
-            Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT id, title FROM movies LIMIT 1");
+            // Class.forName("org.postgresql.Driver");
+            Statement statement = AdminRoutesTest.connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT title FROM movies");
+            List<String> titleList = new ArrayList<>();
             while (resultSet.next()) {
-                filmTitle = resultSet.getString("title");
-                filmId = resultSet.getString("id");
+                titleList.add(resultSet.getString("title"));
             }
-            System.out.println("film title: " + filmTitle + ", film ID: " + filmId);
-            connection.close();
-            } catch (Exception e) {
+            filmTitles =titleList.toArray(new String[0]);
+            System.out.println("appReturnedMovies / film titles: " + Arrays.toString(filmTitles));
+        } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
 
-
-
-        OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/movies/" + filmId)
+                .url("http://localhost:4000/v1/movies")
+                .build();
+        try {
+            String response = this.client.newCall(request).execute().body().string();
+            System.out.println("appReturnedMovies response:" + response);
+            for (String title : filmTitles) {
+                Assertions.assertTrue(response.contains("\"title\":\"" + title + "\","), "\"title\" not found in response: " + title);
+            }
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void appReturnMoviesByGenres() {
+        String[] filmTitles = null;
+        try {
+            // Class.forName("org.postgresql.Driver");
+            Statement statement = AdminRoutesTest.connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("select title from movies left join movies_genres on movies.id = movies_genres.movie_id left join genres on movies_genres.genre_id = genres.id where genres.id = 11");
+            List<String> titleList = new ArrayList<>();
+            while (resultSet.next()) {
+                titleList.add(resultSet.getString("title"));
+            }
+            filmTitles =titleList.toArray(new String[0]);
+            System.out.println("appReturnMoviesByGenres / film titles: " + Arrays.toString(filmTitles));
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4000/v1/movies/genres/11")
                 .build();
 
         try {
-            String response = client.newCall(request).execute().body().string();
-            System.out.println(response);
-            Assertions.assertTrue(response.contains("\"title\":\"" + filmTitle + "\","));
+            String response = this.client.newCall(request).execute().body().string();
+            System.out.println("appReturnMoviesByGenres response:" + response);
+            for (String title : filmTitles) {
+                Assertions.assertTrue(response.contains("\"title\":\"" + title + "\","), "\"title\" not found in response: " + title);
+            }
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void appReturnedMoviesById() {
+        String filmTitle = "";
+        String filmID = "5";
+        try {
+            // Class.forName("org.postgresql.Driver");
+            Statement statement = AdminRoutesTest.connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT id, title FROM movies WHERE id = " + filmID);
+            while (resultSet.next()) {
+                filmTitle = resultSet.getString("title");
+                filmID = resultSet.getString("id");
+            }
+            System.out.println("appReturnedMoviesById /film title: " + filmTitle + "  film id: " + filmID);
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4000/v1/movies/" + filmID)
+                .build();
+
+        try {
+            String response = this.client.newCall(request).execute().body().string();
+            System.out.println("appReturnedMoviesById response:" + response);
+            Assertions.assertTrue(response.contains("\"id\":" + filmID + ",\"title\":\"" + filmTitle + "\","));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
