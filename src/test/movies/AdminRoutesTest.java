@@ -135,7 +135,7 @@ public class AdminRoutesTest {
 
     @Test
     void deleteMovie() {
-        String[] filmTitles = null;
+        String[] filmTitles;
         String filmTitle = "";
         String filmID = "";
         try {
@@ -169,8 +169,6 @@ public class AdminRoutesTest {
             Assertions.fail("Exception: " + e.getMessage());
         }
 
-        String deleteFilmTitle = filmTitle;
-
         try {
             // Class.forName("org.postgresql.Driver");
             Statement statement = AdminRoutesTest.connection.createStatement();
@@ -181,7 +179,7 @@ public class AdminRoutesTest {
             }
             filmTitles =titleList.toArray(new String[0]);
             //System.out.println("adminCanGetMovies / film titles: " + Arrays.toString(filmTitles));
-            Assertions.assertFalse(Arrays.stream(filmTitles).anyMatch(title -> title.equals(deleteFilmTitle)));
+            Assertions.assertFalse(Arrays.asList(filmTitles).contains(filmTitle));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }

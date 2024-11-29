@@ -1,14 +1,10 @@
 package movies;
 
-import com.google.gson.Gson;
-import movies.models.AuthResponse;
 import okhttp3.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class UserRoutesTest {
