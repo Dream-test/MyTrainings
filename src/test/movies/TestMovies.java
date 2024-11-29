@@ -11,9 +11,6 @@ import java.util.List;
 
 
 public class TestMovies {
-   // String DB_URL = "jdbc:postgresql://localhost:5432/movies";
-   // String DB_USER = "postgres";
-   // String DB_PASSWORD = "postgres";
    OkHttpClient client;
 
     @BeforeAll
@@ -44,7 +41,7 @@ public class TestMovies {
                 genreList.add(resultSet.getString("genre"));
             }
             filmGenres =genreList.toArray(new String[0]);
-            System.out.println("film genres: " + Arrays.toString(filmGenres));
+            //System.out.println("film genres: " + Arrays.toString(filmGenres));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
@@ -56,7 +53,7 @@ public class TestMovies {
 
         try {
             String response = this.client.newCall(request).execute().body().string();
-            System.out.println(response);
+            //System.out.println(response);
             for (String genre : filmGenres) {
                 Assertions.assertTrue(response.contains(genre), "genre not found in response: " + genre);
             }
@@ -78,7 +75,7 @@ public class TestMovies {
                 titleList.add(resultSet.getString("title"));
             }
             filmTitles =titleList.toArray(new String[0]);
-            System.out.println("appReturnedMovies / film titles: " + Arrays.toString(filmTitles));
+            //System.out.println("appReturnedMovies / film titles: " + Arrays.toString(filmTitles));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
@@ -88,7 +85,7 @@ public class TestMovies {
                 .build();
         try {
             String response = this.client.newCall(request).execute().body().string();
-            System.out.println("appReturnedMovies response:" + response);
+            //System.out.println("appReturnedMovies response:" + response);
             for (String title : filmTitles) {
                 Assertions.assertTrue(response.contains("\"title\":\"" + title + "\","), "\"title\" not found in response: " + title);
             }
@@ -109,7 +106,7 @@ public class TestMovies {
                 titleList.add(resultSet.getString("title"));
             }
             filmTitles =titleList.toArray(new String[0]);
-            System.out.println("appReturnMoviesByGenres / film titles: " + Arrays.toString(filmTitles));
+            //System.out.println("appReturnMoviesByGenres / film titles: " + Arrays.toString(filmTitles));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
@@ -120,7 +117,7 @@ public class TestMovies {
 
         try {
             String response = this.client.newCall(request).execute().body().string();
-            System.out.println("appReturnMoviesByGenres response:" + response);
+            //System.out.println("appReturnMoviesByGenres response:" + response);
             for (String title : filmTitles) {
                 Assertions.assertTrue(response.contains("\"title\":\"" + title + "\","), "\"title\" not found in response: " + title);
             }
@@ -132,16 +129,16 @@ public class TestMovies {
     @Test
     void appReturnedMoviesById() {
         String filmTitle = "";
-        String filmID = "5";
+        String filmID = "";
         try {
             // Class.forName("org.postgresql.Driver");
             Statement statement = AdminRoutesTest.connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT id, title FROM movies WHERE id = " + filmID);
+            ResultSet resultSet = statement.executeQuery("SELECT id, title FROM movies LIMIT 1");
             while (resultSet.next()) {
                 filmTitle = resultSet.getString("title");
                 filmID = resultSet.getString("id");
             }
-            System.out.println("appReturnedMoviesById /film title: " + filmTitle + "  film id: " + filmID);
+            //System.out.println("appReturnedMoviesById /film title: " + filmTitle + "  film id: " + filmID);
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
@@ -152,7 +149,7 @@ public class TestMovies {
 
         try {
             String response = this.client.newCall(request).execute().body().string();
-            System.out.println("appReturnedMoviesById response:" + response);
+            //System.out.println("appReturnedMoviesById response:" + response);
             Assertions.assertTrue(response.contains("\"id\":" + filmID + ",\"title\":\"" + filmTitle + "\","));
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());

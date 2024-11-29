@@ -12,7 +12,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class UserRoutesTest {
-    OkHttpClient client;
+    //OkHttpClient client;
 
     @BeforeAll
     static void initDBConnection() {
@@ -24,22 +24,6 @@ public class UserRoutesTest {
         AdminRoutesTest.closeDBConnection();
     }
 
-    private void logInCurrentUser() {
-        OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create("{\"email\":\"admin@example.com\",\"password\":\"secret\"}", mediaType);
-        Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/authenticate")
-                .post(body)
-                .build();
-
-        try {
-            client.newCall(request).execute();
-        } catch (Exception e) {
-            Assertions.fail("Exception: " + e.getMessage());
-        }
-    }
-
     @Test
     void logOutUser() {
         OkHttpClient client = new OkHttpClient();
@@ -49,7 +33,7 @@ public class UserRoutesTest {
 
         try {
             Response response = client.newCall(request).execute();
-            System.out.println("logOutLogInUser response:" + response.code());
+            //System.out.println("logOutLogInUser response:" + response.code());
             Assertions.assertEquals(202, response.code());
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
@@ -68,7 +52,7 @@ public class UserRoutesTest {
 
         try {
             Response response = client.newCall(request).execute();
-            System.out.println("logOutLogInUser response:" + response.code());
+            //System.out.println("logOutLogInUser response:" + response.code());
             Assertions.assertEquals(200, response.code());
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
@@ -77,7 +61,6 @@ public class UserRoutesTest {
 
     @Test
     void getUserByEmailWhenAuthorised() {
-
         try {
             Statement statement = AdminRoutesTest.connection.createStatement();
             statement.executeUpdate("insert into users (first_name, last_name, email, password, created_at, updated_at) values ('User1', 'LastNameUser1', 'user@example.com', '$2a$14$wVsaPvJnJJsomWArouWCtusem6S/.Gauq/GjOIEHpyh2DAMmso1wy', '2024-11-28', '2024-11-28')");
@@ -85,45 +68,53 @@ public class UserRoutesTest {
             Assertions.fail("Exception: " + e.getMessage());
         }
 
-        initHttpClient();
+        AdminRoutesTest adminRoutesTest = new AdminRoutesTest();
+        adminRoutesTest.initHttpClient();
         Request request = new Request.Builder()
                 .url("http://localhost:4000/v1/admin/user?email=user%40example.com")
                 .build();
         try {
-            String response = this.client.newCall(request).execute().body().string();
+            String response = adminRoutesTest.client.newCall(request).execute().body().string();
             Assertions.assertTrue(response.contains("\"email\":\"user@example.com\""));
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
+
+        try {
+            Statement statement = AdminRoutesTest.connection.createStatement();
+            statement.executeUpdate("DELETE FROM users WHERE email = 'user@example.com'");
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
         }
     }
 
-    void initHttpClient() {
-        this.client = new OkHttpClient.Builder()
-                .addInterceptor(chain -> {
-                    Request request = chain.request().newBuilder()
-                            .addHeader("Authorization", "Bearer " + this.getAccessToken())
-                            .build();
-                    return chain.proceed(request);
-                })
-                .build();
-    }
+    @Test
+    void getUserByEmailWhenUnauthorised() {
+        try {
+            Statement statement = AdminRoutesTest.connection.createStatement();
+            statement.executeUpdate("insert into users (first_name, last_name, email, password, created_at, updated_at) values ('User1', 'LastNameUser1', 'user@example.com', '$2a$14$wVsaPvJnJJsomWArouWCtusem6S/.Gauq/GjOIEHpyh2DAMmso1wy', '2024-11-28', '2024-11-28')");
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
+        }
 
-    String getAccessToken() {
         OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create("{\"email\":\"admin@example.com\",\"password\":\"secret\"}", mediaType);
         Request request = new Request.Builder()
-                .url("http://localhost:4000/v1/authenticate")
-                .post(body)
+                .url("http://localhost:4000/v1/admin/user?email=user%40example.com")
                 .build();
 
         try {
-            String response = client.newCall(request).execute().body().string();
-            AuthResponse authResponse = new Gson().fromJson(response, AuthResponse.class);
-            return authResponse.accessToken;
+            Response response = client.newCall(request).execute();
+            //System.out.println("getUserByEmailWhenUnauthorised response:" + response.code());
+            Assertions.assertEquals(401, response.code());
         } catch (Exception e) {
             Assertions.fail("Exception: " + e.getMessage());
-            return "";
+        }
+
+        try {
+            Statement statement = AdminRoutesTest.connection.createStatement();
+            statement.executeUpdate("DELETE FROM users WHERE email = 'user@example.com'");
+        } catch (Exception e) {
+            Assertions.fail("Exception: " + e.getMessage());
         }
     }
 }
